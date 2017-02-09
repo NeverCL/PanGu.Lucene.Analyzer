@@ -2,7 +2,9 @@
 using Lucene.Net.Analysis.Tokenattributes;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using PanGu.Match;
 
 namespace PanGu.Lucene.Analyzer
 {
@@ -42,20 +44,12 @@ namespace PanGu.Lucene.Analyzer
             _typeAtt = AddAttribute<ITypeAttribute>();
         }
 
-        public PanGuTokenizer(TextReader input, bool originalResult) : this(input)
+        public PanGuTokenizer(TextReader input, MatchOptions options, MatchParameter parameters, bool originalResult) : this(input, options, parameters)
         {
             _originalResult = originalResult;
         }
 
-        public PanGuTokenizer()
-        {
-            lock (LockObj)
-            {
-                Init();
-            }
-        }
-
-        public PanGuTokenizer(TextReader input)
+        public PanGuTokenizer(TextReader input, MatchOptions options, MatchParameter parameters)
             : base(input)
         {
             lock (LockObj)
@@ -90,9 +84,10 @@ namespace PanGu.Lucene.Analyzer
             else
             {
                 var segment = new Segment();
-                ICollection<WordInfo> wordInfos = segment.DoSegment(_inputText);
-                _wordList = new WordInfo[wordInfos.Count];
-                wordInfos.CopyTo(_wordList, 0);
+                ICollection<WordInfo> wordInfos = segment.DoSegment(_inputText, options, parameters);
+                _wordList = wordInfos.ToArray();
+                //_wordList = new WordInfo[wordInfos.Count];
+                //wordInfos.CopyTo(_wordList, 0);
             }
         }
 
